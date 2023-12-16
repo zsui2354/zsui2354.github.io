@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html data-color-mode="light" data-dark-theme="dark" data-light-theme="light">
+<html data-color-mode="light" data-dark-theme="dark" data-light-theme="light" lang="zh-CN">
 <head>
     <meta content="text/html; charset=utf-8" http-equiv="content-type" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="生命不息，折腾不止">
     <link href="//cdn.staticfile.org/Primer/21.0.7/primer.css" rel="stylesheet" />
     <link rel="icon" href="http://meekdai.com/favicon.ico">
     <script>
@@ -12,16 +13,6 @@
         else if(localStorage.getItem("meek_theme")=="light"){document.getElementsByTagName("html")[0].attributes.getNamedItem("data-color-mode").value="light";}
     </script>
     
-    <style>#postBody{font-size:20px}
-        .SideNav-item{
-            border-radius: 50px;
-        }
-        .SideNav{
-            border-radius: 50px;
-        }
-    </style>
-
-
 <title>Github blog</title>
 
 </head>
@@ -46,6 +37,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 .d-flex{min-width:0;}
 .listTitle{overflow:hidden;white-space:nowrap;text-overflow: ellipsis;max-width: 100%;}
 .listLabels{white-space:nowrap;}
+.listLabels object{max-height:16px;max-width:24px;}
 
 @media (max-width: 600px) {
     body {padding: 8px;}
@@ -60,18 +52,15 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <body>
     <div id="header">
 <h1>
-
-    <!-- <img src="Img/IMG_20231109_231523_030.jpg" class="avatar circle" id="avatarImg"> --><a class="blogTitle">王果冻的博客主页</a></h1>
-
-
+    <img src="http://meekdai.com/avatar.jpg" class="avatar circle" id="avatarImg" alt="avatar"><a class="blogTitle">王果冻的博客主页</a></h1>
 <div class="title-right">
-    <a href="/tag.html"><button id="buttonSearch" class="btn btn-invisible circle" title="搜索">
+    <a href="https://zsui2354.github.io//tag.html"><button id="buttonSearch" class="btn btn-invisible circle" title="搜索">
         <svg class="octicon" width="16" height="16" >
             <path id="pathSearch" fill-rule="evenodd"></path>
         </svg>
     </button></a>
     
-    <a href="/rss.xml" target="_blank"><button id="buttonRSS" class="btn btn-invisible circle" title="RSS">
+    <a href="https://zsui2354.github.io//rss.xml" target="_blank"><button id="buttonRSS" class="btn btn-invisible circle" title="RSS">
         <svg class="octicon" width="16" height="16" >
             <path id="pathRSS" fill-rule="evenodd"></path>
         </svg>
@@ -88,13 +77,13 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <nav class="SideNav border">
 <a class="SideNav-item d-flex flex-items-center flex-justify-between" href="post/chuang-jian-bo-ke-kong-jian-xuan-yan.html">
     <div class="d-flex flex-items-center">
-        <svg class="SideNav-icon octicon" style="height:16px;"><path class="svgTop0" d=""></path>
+        <svg class="SideNav-icon octicon" style="witdh:16px;height:16px"><path class="svgTop0" d=""></path>
         </svg>
         <span class="listTitle">创建博客空间宣言</span>
     </div>
     <div class="listLabels">
-        
-        <span class="Label LabelName" style="background-color:#7057ff"><object><a style="color:#fff" href="/tag.html#good first issue">good first issue</a></object></span>
+        <span class="Label" style="background-color:#006b75">1</span>
+        <span class="Label LabelName" style="background-color:#7057ff"><object><a style="color:#fff" href="https://zsui2354.github.io//tag.html#good first issue">good first issue</a></object></span>
         <span class="Label LabelTime" style="background-color:#A333D0">2023-12-12</span>
     </div>
 </a>
@@ -102,7 +91,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 </div>
     <div id="footer">Copyright © <span id="year"></span><a href="https://zsui2354.github.io/"> Github blog </a>
 <p>
-<span id="runday"></span>Powered by <a href="https://github.com/Meekdai/Gmeek" target="_blank">Gmeek</a>
+<span id="runday"></span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a>
 </p>
 
 <script>
