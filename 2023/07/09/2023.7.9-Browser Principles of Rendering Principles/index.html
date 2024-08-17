@@ -1,0 +1,237 @@
+<!DOCTYPE html><html lang="[&quot;zh-tw&quot;,&quot;en&quot;,&quot;default&quot;]" data-theme="dark"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>浏览器原理之“渲染原理” | 王果冻的博客</title><meta name="author" content="王果冻"><meta name="copyright" content="王果冻"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#0d0d0d"><meta name="description" content="浏览器渣染原理html字符串-&gt;煊染-&gt;像素信息 面试题:浏览器是如何染页面的？渣染流水线1234567当浏览器的网络线程收到HTML文档后，会产生一个染任务，并将其传递给染主线程的消息队列。在事件循环机制的作用下，染主线程取出消息队列中的染任务，开启染流程。整个渣染流程分为多个阶段，分别是：HTML解析、样式计算、布局、分层、绘制、分块、光栅化、画每个阶段都有明确的输入输出，上一个阶">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浏览器原理之“渲染原理”">
+<meta property="og:url" content="https://zsui2354.github.io/2023/07/09/2023.7.9-Browser%20Principles%20of%20Rendering%20Principles/">
+<meta property="og:site_name" content="王果冻的博客">
+<meta property="og:description" content="浏览器渣染原理html字符串-&gt;煊染-&gt;像素信息 面试题:浏览器是如何染页面的？渣染流水线1234567当浏览器的网络线程收到HTML文档后，会产生一个染任务，并将其传递给染主线程的消息队列。在事件循环机制的作用下，染主线程取出消息队列中的染任务，开启染流程。整个渣染流程分为多个阶段，分别是：HTML解析、样式计算、布局、分层、绘制、分块、光栅化、画每个阶段都有明确的输入输出，上一个阶">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://zsui2354.github.io/Src/2023.4.11-The%20Event%20Loop%20of%20the%20Browser%20Principle.jpg">
+<meta property="article:published_time" content="2023-07-08T18:33:22.000Z">
+<meta property="article:modified_time" content="2024-08-17T19:23:11.397Z">
+<meta property="article:author" content="王果冻">
+<meta property="article:tag" content="技术">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zsui2354.github.io/Src/2023.4.11-The%20Event%20Loop%20of%20the%20Browser%20Principle.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zsui2354.github.io/2023/07/09/2023.7.9-Browser%20Principles%20of%20Rendering%20Principles/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Error',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: true,
+    post: true
+  },
+  runtime: 'days',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '浏览器原理之“渲染原理”',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-08-18 03:23:11'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">Loading...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+  window.addEventListener('load',() => { preloader.endLoading() })
+
+  if (false) {
+    document.addEventListener('pjax:send', () => { preloader.initLoading() })
+    document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/Logo_A.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">11</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">10</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">11</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/%E4%B8%BB%E9%A1%B5/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/%E6%96%87%E7%AB%A0/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/%E6%A0%87%E7%AD%BE/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/%E7%B1%BB%E5%88%AB/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/%E5%8F%8B%E9%93%BE/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/%E5%85%B3%E4%BA%8E/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url('/Src/2023.4.11-The%20Event%20Loop%20of%20the%20Browser%20Principle.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="王果冻的博客"><span class="site-name">王果冻的博客</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/%E4%B8%BB%E9%A1%B5/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/%E6%96%87%E7%AB%A0/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/%E6%A0%87%E7%AD%BE/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/%E7%B1%BB%E5%88%AB/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/%E5%8F%8B%E9%93%BE/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/%E5%85%B3%E4%BA%8E/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">浏览器原理之“渲染原理”</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2023-07-08T18:33:22.000Z" title="Created 2023-07-09 02:33:22">2023-07-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-08-17T19:23:11.397Z" title="Updated 2024-08-18 03:23:11">2024-08-18</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="浏览器原理之“渲染原理”"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="浏览器渣染原理"><a href="#浏览器渣染原理" class="headerlink" title="浏览器渣染原理"></a>浏览器渣染原理</h1><p>html字符串-&gt;煊染-&gt;像素信息<br><img src="https://s2.loli.net/2024/08/18/MfqldW1w8Cx2eYX.jpg" alt="0"></p>
+<h2 id="面试题-浏览器是如何染页面的？"><a href="#面试题-浏览器是如何染页面的？" class="headerlink" title="面试题:浏览器是如何染页面的？"></a>面试题:浏览器是如何染页面的？</h2><h3 id="渣染流水线"><a href="#渣染流水线" class="headerlink" title="渣染流水线"></a>渣染流水线</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">当浏览器的网络线程收到HTML文档后，会产生一个染任务，并将其传递给染主线程的消息队列。</span><br><span class="line">在事件循环机制的作用下，染主线程取出消息队列中的染任务，开启染流程。</span><br><span class="line"></span><br><span class="line">整个渣染流程分为多个阶段，</span><br><span class="line">分别是：HTML解析、样式计算、布局、分层、绘制、分块、光栅化、画</span><br><span class="line">每个阶段都有明确的输入输出，上一个阶段的输出会成为下一个阶段的输入。</span><br><span class="line">这样，整个染流程就形成了一套组织严密的生产流水线。</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2024/08/18/LGAbS1YtwzMUxNn.jpg" alt="1"></p>
+<h3 id="1解析"><a href="#1解析" class="headerlink" title="1解析"></a>1解析</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">渣染的第一步是解析Html.</span><br><span class="line"></span><br><span class="line">解析过程中遇到CSS解析CSS，遇到JS执行JS。为了提高解析效率，浏览器在开始解析前，会启动一个</span><br><span class="line">预解析的线程，率先下载HTML中的外部CSS文件和外部的JS文件。</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2024/08/18/CalRp1DL7BnmOtz.jpg" alt="2"></p>
+<p><img src="https://s2.loli.net/2024/08/18/EBsJw7gMCnFdQZG.jpg" alt="3"></p>
+<h3 id="解析遇到CSS怎么办"><a href="#解析遇到CSS怎么办" class="headerlink" title="解析遇到CSS怎么办"></a>解析遇到CSS怎么办</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">如果主线程解析到Link位置，此时外部的Css文件还没有下载解析好，主线程不会等待，继续解析后续的HTML。这是因为下载和解析CSS的工作是在预解析线程中进行的。这就是CSS不会阻塞HTML解析的根本原因。</span><br></pre></td></tr></table></figure>
+<p><img src="https://s2.loli.net/2024/08/18/YCsmRjS89qreaiT.jpg" alt="4"></p>
+<h3 id="解析遇到Script怎么办"><a href="#解析遇到Script怎么办" class="headerlink" title="解析遇到Script怎么办"></a>解析遇到Script怎么办</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">如果主线程解析到script位置，会停止解析HTML，转而等待JS文件下载好，并将全局代码解析执行完成</span><br><span class="line">后，才能继续解析HTML。这是因为JS代码的执行过程可能会修改当前的DOM树，所以DOM树的生成必</span><br><span class="line">须暂停。这就是JS会阻塞HTML解析的根本原因。</span><br></pre></td></tr></table></figure>
+<p><img src="https://s2.loli.net/2024/08/18/TnJW5iKOFc6zvYA.jpg" alt="5"><br>这里渲染遇到JS是不行的，必须等待CSS下载完成过后，然后把代码放到主线程启动V8引擎去运行JS，运行后才能继续解析HTML </p>
+<p>这样的原因是因为JS代码里边有可能会改动当前的DOM，他有可能会把这个解析出来的DOM改动了，DOM不是解析完才生成的，是一边解析一边生成</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">第一步完成后，会得到DOM树和CSS OM树，浏览器的默认样式、内部样式、外部样式、行内样式均会包含</span><br><span class="line">在CSS OM树中。</span><br></pre></td></tr></table></figure>
+<h2 id="2样式计算"><a href="#2样式计算" class="headerlink" title="2样式计算"></a>2样式计算</h2><p><img src="https://s2.loli.net/2024/08/18/rw4aDFMIRPqLEU7.jpg" alt="6"><br>到了这一步 就和 css属性值的计算过程 有关系了，样式计算就发生在这一步</p>
+<h3 id="CSS中有两块很重要的知识：-其一就是-《css属性值的计算过程》"><a href="#CSS中有两块很重要的知识：-其一就是-《css属性值的计算过程》" class="headerlink" title="CSS中有两块很重要的知识： 其一就是 《css属性值的计算过程》"></a>CSS中有两块很重要的知识： 其一就是 《css属性值的计算过程》</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">包含 </span><br><span class="line">“层叠”</span><br><span class="line">“权重” 这是老的叫法，它现在应该叫做   “比较重要性，比较特殊性，比较原次序”</span><br><span class="line">&quot;继承&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="其二是-《视觉格式化模型》"><a href="#其二是-《视觉格式化模型》" class="headerlink" title="其二是 《视觉格式化模型》"></a>其二是 《视觉格式化模型》</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">“盒模型”</span><br><span class="line">“包含块”</span><br><span class="line">“流式布局”</span><br><span class="line">“流式布局”</span><br><span class="line">“浮动布局”</span><br><span class="line">包含BFC</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">渣染的下一步是样式计算。</span><br><span class="line">主线程会遍历得到的DOM树，依次为树中的每个节点计算出它最终的样式，称之为Computed Style。</span><br><span class="line"></span><br><span class="line">在这一过程中，很多预设值会变成绝对值，比如red会变成rgb(255，0，0）</span><br><span class="line">相对单位会变成绝对单位，比如em会变成px</span><br><span class="line">这一步完成后，会得到一棵带有样式的DOM树。</span><br></pre></td></tr></table></figure>
+
+<p>计算完后会得到一个最终样式 也就是 计算后的样式 叫 Computed Style</p>
+<p>计算完后的就是最终样式 就是 就是它所有的CSS属性必须要全部有值</p>
+<h2 id="3布局"><a href="#3布局" class="headerlink" title="3布局"></a>3布局</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">接下来是布局，布局完成后会得到布局树。</span><br><span class="line"></span><br><span class="line">布局阶段会依次遍历DOM树的每一个节点，计算每个节点的几何信息。例如节点的宽高、相对包含块的位置。</span><br><span class="line"></span><br><span class="line">大部分时候，DOM树和布局树并非一一对应。</span><br><span class="line"></span><br><span class="line">比如display:none的节点没有几何信息，因此不会生成到布局树；又比如使用了伪元素选择器，虽然DoM树中不存在这些伪元素节点，但它们拥有几何信息，所以会生成到布局树中。还有匿名行盒、匿名块盒等等都会导致DOM树和布局树无法一一对应。</span><br></pre></td></tr></table></figure>
+<p><img src="https://s2.loli.net/2024/08/18/exupbkOID3wU4si.jpg" alt="7"><br>就是根据DOM树根据它的样式算出每个节点的尺寸和位置</p>
+<p>页面上它们元素之间的位置和尺寸是相互影响的，一个元素的位置和尺寸变了，它可能会导致整个布局就产生变化</p>
+<p>它的位置相对的是    包含块，<br>简单来说就是一个元素的活动区域</p>
+<p><img src="https://s2.loli.net/2024/08/18/fRzEX5cMw6kbHLF.jpg" alt="8"><br>有些隐藏的元素是没有几何信息的，他不会生成在布局树里边</p>
+<p><img src="https://s2.loli.net/2024/08/18/xa9zjUJy6PL73Ap.jpg" alt="9"><br>比方有一个元素，它涉及到为元素选择器    ::before 他设置了before过后 , 这个玩意儿在DOM树里边是不存在的 ， 但是在布局数里边是存在的</p>
+<p><img src="https://s2.loli.net/2024/08/18/VWwRTtxo5PciXLU.jpg" alt="10"><br>b是个内容 有一句话  ：</p>
+<p>一些术语什么 行级元素，块级元素都是淘汰掉的，W3C官方都不用了，都是10多年前的，叫什么元素一般是HTML用的叫法，这是CSS阿所以叫 行盒，块盒</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">《内容必须在行盒中》，文本内容必须放到行盒里面，</span><br><span class="line">如果文本元素出现在块盒里面，布局树会自动在文本的前面或者说是上级节点，加上一行盒，叫做匿名行盒，这个是在调试工具中是看不到的</span><br><span class="line"></span><br><span class="line">另外方面这个上图的b是个文本，他应该是行盒，所以不能和块盒相邻的，所以上图b上级节点是给它包的一个匿名块盒，匿名块盒中又包了一个匿名行盒之后才是文本b,上图将其行盒省略以简化图画</span><br><span class="line"></span><br><span class="line">《行盒和块盒不能相邻》</span><br></pre></td></tr></table></figure>
+<p>总之的意思就是有很多种情况会导致DOM树和layout就是布局数它不对应</p>
+<p>布局对于JS而言虽然不能获取布局树里的对象，但是它可以间接的获取一些信息</p>
+<h2 id="4分层"><a href="#4分层" class="headerlink" title="4分层"></a>4分层</h2><p>下一步是分层</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">主线程会使用一套复杂的策略对整个布局树中进行分层。</span><br><span class="line"></span><br><span class="line">分层的好处在于，将来某一个层改变后，仅会对该层进行后续处理，从而提升效率。</span><br><span class="line"></span><br><span class="line">滚动条、堆叠上下文、transform、opacity等样式都会或多或少的影响分层结果，也可以通过will-change属性更大程度的影响分层结果。</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2024/08/18/5xPfTlHMu9RnKmg.jpg" alt="11"><br>跟堆叠上下文有关的属性就会影响到分层结果</p>
+<h2 id="5绘制"><a href="#5绘制" class="headerlink" title="5绘制"></a>5绘制</h2><p>这里的绘制，是为每一层生成如何绘制的指令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">再下一步是绘制</span><br><span class="line">主线程会为每个层单独产生绘制指令集，用于描述这一层的内容该如何画出来。</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2024/08/18/EMmYk7wK3clbejH.jpg" alt="12"></p>
+<h2 id="6分块"><a href="#6分块" class="headerlink" title="6分块"></a>6分块</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">完成绘制后，主线程将每个图层的绘制信息提交给合成线程，剩余工作将由合成线程完成。</span><br><span class="line"></span><br><span class="line">合成线程首先对每个图层进行分块，将其划分为更多的小区域。</span><br><span class="line">它会从线程池中拿取多个线程来完成分块工作。</span><br></pre></td></tr></table></figure>
+<p><img src="https://s2.loli.net/2024/08/18/nCrSMklFDOcT3Ks.jpg" alt="13"></p>
+<p><img src="https://s2.loli.net/2024/08/18/tHzJdbQA8WvTfu3.jpg" alt="14"></p>
+<h2 id="7光栅化"><a href="#7光栅化" class="headerlink" title="7光栅化"></a>7光栅化</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">分块完成后，进入光栅化阶段。</span><br><span class="line"></span><br><span class="line">合成线程会将块信息交给GPU进程，以极高的速度完成光栅化。</span><br><span class="line"></span><br><span class="line">GPU进程会开启多个线程来完成光栅化，并且优先处理靠近视口区域的块。</span><br><span class="line"></span><br><span class="line">光栅化的结果，就是一块一块的位图，位图就是包含每个像素点的信息了</span><br></pre></td></tr></table></figure>
+<p><img src="https://s2.loli.net/2024/08/18/G9Lhpm5MyrKa6tv.jpg" alt="15"><br>光栅化是在GPU里面做的</p>
+<h2 id="8画"><a href="#8画" class="headerlink" title="8画"></a>8画</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">最后一个阶段就是画了</span><br><span class="line"></span><br><span class="line">合成线程拿到每个层、每个块的位图后，生成一个个「指引（quad）」信息。</span><br><span class="line"></span><br><span class="line">指引会标识出每个位图应该画到屏幕的哪个位置，以及会考虑到旋转、缩放等变形。</span><br><span class="line"></span><br><span class="line">变形发生在合成线程，为什么说transform效率高因为它与渲染主线程无关，这就是transform效率高的本质原因。</span><br><span class="line"></span><br><span class="line">合成线程会把quad提交给GPU进程，由GPU进程产生系统调用，提交给GPU硬件，完成最终的屏幕成</span><br><span class="line">像</span><br></pre></td></tr></table></figure>
+<p><img src="https://s2.loli.net/2024/08/18/ZG5j2m7X9HAc8Eb.jpg" alt="16"></p>
+<p><img src="https://s2.loli.net/2024/08/18/quLrQY7EtXUof9h.jpg" alt="17"></p>
+<h2 id="常见面试题：什么是reflow？"><a href="#常见面试题：什么是reflow？" class="headerlink" title="常见面试题：什么是reflow？"></a>常见面试题：什么是reflow？</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">reflow的本质就是重新计算layout树。</span><br><span class="line"></span><br><span class="line">当进行了会影响布局树的操作后，需要重新计算布局树，会引发layout。</span><br><span class="line"></span><br><span class="line">为了避免连续的多次操作导致布局树反复计算，浏览器会合并这些操作，当JS代码全部完成后再进行统一计</span><br><span class="line">算。所以，改动属性造成的re flow是异步完成的。</span><br><span class="line"></span><br><span class="line">也同样因为如此，当JS获取布局属性时，就可能造成无法获取到最新的布局信息。</span><br><span class="line"></span><br><span class="line">浏览器在反复权衡下，最终决定获取属性立即reflow。</span><br></pre></td></tr></table></figure>
+<p><img src="https://s2.loli.net/2024/08/18/yv5xVpuSelcHnAX.jpg" alt="18"></p>
+<h2 id="常见面试题：什么是是repaint"><a href="#常见面试题：什么是是repaint" class="headerlink" title="常见面试题：什么是是repaint?"></a>常见面试题：什么是是repaint?</h2><p>repaint的本质就是重新根据分层信息计算了绘制指令。</p>
+<p>当改动了可见样式后，就需要重新计算，会引发repaint。</p>
+<p>由于元素的布局信息也属于可见样式，所以reflow一定会引起repaint。</p>
+<h2 id="常见面试题：为什么transform的效率高？"><a href="#常见面试题：为什么transform的效率高？" class="headerlink" title="常见面试题：为什么transform的效率高？"></a>常见面试题：为什么transform的效率高？</h2><p>因为transform既不会影响布局也不会影响绘制指令，它影响的只是染流程的最后一个「draw』阶段</p>
+<p>由于draw阶段在合成线程中，所以transform的变化几乎不会影响染主线程。反之，染主线程无论如何忙碌，也不会影响transform的变化。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="https://zsui2354.github.io">王果冻</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="https://zsui2354.github.io/2023/07/09/2023.7.9-Browser%20Principles%20of%20Rendering%20Principles/">https://zsui2354.github.io/2023/07/09/2023.7.9-Browser%20Principles%20of%20Rendering%20Principles/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%8A%80%E6%9C%AF/">技术</a></div><div class="post_share"><div class="social-share" data-image="/Src/2023.4.11-The%20Event%20Loop%20of%20the%20Browser%20Principle.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/03/05/2024.7.29-Self-Regulatory%20Convention/" title="自我约束"><img class="cover" src="/Src/2024.7.29-Self-Regulatory%20Convention.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous</div><div class="prev_info">自我约束</div></div></a></div><div class="next-post pull-right"><a href="/2023/05/09/2023.4.11-The%20Event%20Loop%20of%20the%20Browser%20Principle/" title="浏览器原理之“事件循环”"><img class="cover" src="/Src/2023.4.11-The%20Event%20Loop%20of%20the%20Browser%20Principle.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next</div><div class="next_info">浏览器原理之“事件循环”</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2023/05/09/2023.4.11-The%20Event%20Loop%20of%20the%20Browser%20Principle/" title="浏览器原理之“事件循环”"><img class="cover" src="/Src/2023.4.11-The%20Event%20Loop%20of%20the%20Browser%20Principle.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-05-09</div><div class="title">浏览器原理之“事件循环”</div></div></a></div><div><a href="/2024/06/05/2024.6.5-GPT%20Questions%20and%20Answers-1/" title="与GPT的题目问答1"><img class="cover" src="/Src/GPT.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-06-05</div><div class="title">与GPT的题目问答1</div></div></a></div><div><a href="/2024/08/03/2024.8.3-Cheat%20Engine/" title="Cheat Engine编译"><img class="cover" src="https://s2.loli.net/2024/08/04/5UP8Fc2m3rtT1iA.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-03</div><div class="title">Cheat Engine编译</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/Logo_A.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">王果冻</div><div class="author-info__description">技术博客</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">11</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">10</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/zsui2354"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="mailto:h2118820285@outlook.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://github.com/zsui2354" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://x.com/aidegongjue1" target="_blank" title="X"><i class="fa-x-twitter" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%A3%E6%9F%93%E5%8E%9F%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text">浏览器渣染原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E9%A2%98-%E6%B5%8F%E8%A7%88%E5%99%A8%E6%98%AF%E5%A6%82%E4%BD%95%E6%9F%93%E9%A1%B5%E9%9D%A2%E7%9A%84%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">面试题:浏览器是如何染页面的？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B8%A3%E6%9F%93%E6%B5%81%E6%B0%B4%E7%BA%BF"><span class="toc-number">1.1.1.</span> <span class="toc-text">渣染流水线</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E8%A7%A3%E6%9E%90"><span class="toc-number">1.1.2.</span> <span class="toc-text">1解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E6%9E%90%E9%81%87%E5%88%B0CSS%E6%80%8E%E4%B9%88%E5%8A%9E"><span class="toc-number">1.1.3.</span> <span class="toc-text">解析遇到CSS怎么办</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E6%9E%90%E9%81%87%E5%88%B0Script%E6%80%8E%E4%B9%88%E5%8A%9E"><span class="toc-number">1.1.4.</span> <span class="toc-text">解析遇到Script怎么办</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E6%A0%B7%E5%BC%8F%E8%AE%A1%E7%AE%97"><span class="toc-number">1.2.</span> <span class="toc-text">2样式计算</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CSS%E4%B8%AD%E6%9C%89%E4%B8%A4%E5%9D%97%E5%BE%88%E9%87%8D%E8%A6%81%E7%9A%84%E7%9F%A5%E8%AF%86%EF%BC%9A-%E5%85%B6%E4%B8%80%E5%B0%B1%E6%98%AF-%E3%80%8Acss%E5%B1%9E%E6%80%A7%E5%80%BC%E7%9A%84%E8%AE%A1%E7%AE%97%E8%BF%87%E7%A8%8B%E3%80%8B"><span class="toc-number">1.2.1.</span> <span class="toc-text">CSS中有两块很重要的知识： 其一就是 《css属性值的计算过程》</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BA%8C%E6%98%AF-%E3%80%8A%E8%A7%86%E8%A7%89%E6%A0%BC%E5%BC%8F%E5%8C%96%E6%A8%A1%E5%9E%8B%E3%80%8B"><span class="toc-number">1.2.2.</span> <span class="toc-text">其二是 《视觉格式化模型》</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3%E5%B8%83%E5%B1%80"><span class="toc-number">1.3.</span> <span class="toc-text">3布局</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4%E5%88%86%E5%B1%82"><span class="toc-number">1.4.</span> <span class="toc-text">4分层</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5%E7%BB%98%E5%88%B6"><span class="toc-number">1.5.</span> <span class="toc-text">5绘制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6%E5%88%86%E5%9D%97"><span class="toc-number">1.6.</span> <span class="toc-text">6分块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7%E5%85%89%E6%A0%85%E5%8C%96"><span class="toc-number">1.7.</span> <span class="toc-text">7光栅化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8%E7%94%BB"><span class="toc-number">1.8.</span> <span class="toc-text">8画</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E9%9D%A2%E8%AF%95%E9%A2%98%EF%BC%9A%E4%BB%80%E4%B9%88%E6%98%AFreflow%EF%BC%9F"><span class="toc-number">1.9.</span> <span class="toc-text">常见面试题：什么是reflow？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E9%9D%A2%E8%AF%95%E9%A2%98%EF%BC%9A%E4%BB%80%E4%B9%88%E6%98%AF%E6%98%AFrepaint"><span class="toc-number">1.10.</span> <span class="toc-text">常见面试题：什么是是repaint?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E9%9D%A2%E8%AF%95%E9%A2%98%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88transform%E7%9A%84%E6%95%88%E7%8E%87%E9%AB%98%EF%BC%9F"><span class="toc-number">1.11.</span> <span class="toc-text">常见面试题：为什么transform的效率高？</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/08/06/2024.8.6-Open%20node%20resources/" title="开放节点资源"><img src="https://s2.loli.net/2024/08/06/qQ7E5zRvW9irIXx.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="开放节点资源"/></a><div class="content"><a class="title" href="/2024/08/06/2024.8.6-Open%20node%20resources/" title="开放节点资源">开放节点资源</a><time datetime="2024-08-05T18:33:22.000Z" title="Created 2024-08-06 02:33:22">2024-08-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/08/03/2024.8.3-Cheat%20Engine/" title="Cheat Engine编译"><img src="https://s2.loli.net/2024/08/04/5UP8Fc2m3rtT1iA.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cheat Engine编译"/></a><div class="content"><a class="title" href="/2024/08/03/2024.8.3-Cheat%20Engine/" title="Cheat Engine编译">Cheat Engine编译</a><time datetime="2024-08-02T18:33:22.000Z" title="Created 2024-08-03 02:33:22">2024-08-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/24/2024.7.29-C++%20linked%20list%20from%200%20to%201%20in%20practice/" title="C++ 链接表从 0 到 1 的实践应用"><img src="/Src/C++-logo.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C++ 链接表从 0 到 1 的实践应用"/></a><div class="content"><a class="title" href="/2024/06/24/2024.7.29-C++%20linked%20list%20from%200%20to%201%20in%20practice/" title="C++ 链接表从 0 到 1 的实践应用">C++ 链接表从 0 到 1 的实践应用</a><time datetime="2024-06-23T18:03:26.000Z" title="Created 2024-06-24 02:03:26">2024-06-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/05/2024.6.5-GPT%20Questions%20and%20Answers-1/" title="与GPT的题目问答1"><img src="/Src/GPT.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="与GPT的题目问答1"/></a><div class="content"><a class="title" href="/2024/06/05/2024.6.5-GPT%20Questions%20and%20Answers-1/" title="与GPT的题目问答1">与GPT的题目问答1</a><time datetime="2024-06-04T16:00:00.000Z" title="Created 2024-06-05 00:00:00">2024-06-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/02/2024.6.2-.leetcode-Roman%20numerals%20to%20integers/" title="LeetCode题解 13.罗马数字转整数"><img src="/Src/LeetCode/LeetCode-logo2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LeetCode题解 13.罗马数字转整数"/></a><div class="content"><a class="title" href="/2024/06/02/2024.6.2-.leetcode-Roman%20numerals%20to%20integers/" title="LeetCode题解 13.罗马数字转整数">LeetCode题解 13.罗马数字转整数</a><time datetime="2024-06-01T18:33:22.000Z" title="Created 2024-06-02 02:33:22">2024-06-02</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/nav_image.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2024 By 王果冻</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="true"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
